@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>Minha Rotina</title><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--txt:#0f172a;--mut:#64748b;--line:#e2e8f0;--blue:#2563eb;--water:#0ea5e9;--green:#16a34a;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:980px;margin:auto;padding:14px}
+h1,h2{margin:.2em 0}.sub,.meta,.small{color:var(--mut);font-size:13px}.tabs{display:flex;gap:7px;overflow:auto;margin:12px 0}.tab{border:0;border-radius:11px;padding:10px 12px;font-weight:700;background:#e2e8f0;white-space:nowrap}.tab.on{background:#0f172a;color:#fff}.pane{display:none}.pane.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.wide{grid-column:1/-1}@media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:0 8px 24px #0f172a0d}
+input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:11px;margin:5px 0 10px}button{border:0;border-radius:11px;padding:10px 12px;font-weight:700;cursor:pointer;background:#e2e8f0}.primary{background:var(--blue);color:#fff}.water{background:#e0f2fe;color:#075985}.green{background:#dcfce7;color:#166534}.red{background:#fee2e2;color:#991b1b}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.row{grid-template-columns:1fr}}
+.bar{height:13px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin:10px 0}.bar>div{height:100%;background:var(--water)}.foodbar>div{background:var(--green)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.kpi{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px}.kpi b{font-size:20px;display:block}
+.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px}.status{padding:10px;border:1px solid var(--line);border-radius:11px;background:#f8fafc}
+</style></head>
+<body><main>
+<h1>Minha Rotina</h1><div class="sub">Água, alimentação, peso e backup no OneDrive</div>
+<div class="tabs"><button class="tab on" data-p="hoje">Hoje</button><button class="tab" data-p="food">Alimentação</button><button class="tab" data-p="peso">Peso</button><button class="tab" data-p="backup">Backup</button><button class="tab" data-p="config">Configurações</button></div>
+
+<section id="hoje" class="pane on"><div class="grid">
+<div class="card"><h2>💧 Água</h2><div><b id="aguaTxt">0 ml</b> de <span id="aguaMetaTxt">3000 ml</span></div><div class="bar"><div id="aguaBar"></div></div>
+<div class="row"><button class="water" onclick="addWater(200)">+200 ml</button><button class="water" onclick="addWater(500)">+500 ml</button></div><button onclick="customWater()">Outro valor</button></div>
+<div class="card"><h2>🍽️ Nutrição</h2><div><b id="calTxt">0 kcal</b> de <span id="calMetaTxt">2200 kcal</span></div><div class="bar foodbar"><div id="calBar"></div></div>
+<div class="kpis"><div class="kpi"><b id="prot">0g</b><span>Proteína</span></div><div class="kpi"><b id="carb">0g</b><span>Carbo</span></div><div class="kpi"><b id="fat">0g</b><span>Gordura</span></div></div></div>
+<div class="card wide"><div class="row"><div><label>Data</label><input id="date" type="date"></div><div><label>Peso do dia (kg)</label><input id="quickWeight" type="number" step=".1"><button class="primary" onclick="saveWeight()">Salvar peso</button></div></div><h2>Registros</h2><div id="todayList" class="list"></div></div>
+</div></section>
+
+<section id="food" class="pane"><div class="card"><h2>Adicionar alimento</h2><form id="foodForm">
+<div class="row"><div><label>Refeição</label><select id="meal"><option>Café da manhã</option><option>Lanche</option><option>Almoço</option><option>Pré-treino</option><option>Pós-treino</option><option>Jantar</option><option>Ceia</option></select></div><div><label>Alimento</label><input id="foodName" required></div></div>
+<div class="row"><div><label>Quantidade</label><input id="qty" placeholder="Ex.: 150 g"></div><div><label>Horário</label><input id="time" type="time"></div></div>
+<div class="row"><div><label>Calorias</label><input id="cal" type="number" step=".1"></div><div><label>Proteína (g)</label><input id="p" type="number" step=".1"></div></div>
+<div class="row"><div><label>Carboidrato (g)</label><input id="c" type="number" step=".1"></div><div><label>Gordura (g)</label><input id="f" type="number" step=".1"></div></div>
+<label>Observação</label><input id="note"><button class="primary" type="submit">Adicionar</button></form></div><div class="card" style="margin-top:12px"><h2>Itens do dia</h2><div id="foodList" class="list"></div></div></section>
+
+<section id="peso" class="pane"><div class="grid"><div class="card"><h2>Registrar peso</h2><label>Data</label><input id="weightDate" type="date"><label>Peso (kg)</label><input id="weightValue" type="number" step=".1"><label>Observação</label><input id="weightNote"><button class="primary" onclick="saveWeight2()">Salvar</button></div><div class="card"><h2>Histórico</h2><div id="weightList" class="list"></div></div></div></section>
+
+<section id="backup" class="pane"><div class="grid">
+<div class="card"><h2>☁️ OneDrive pessoal</h2><div id="odStatus" class="status">Não conectado.</div><label>Microsoft App Client ID</label><input id="clientId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"><label>Redirect URI</label><input id="redirectUri"><div class="small">Use no Entra uma SPA com Files.ReadWrite.AppFolder e User.Read.</div><div class="row"><button class="primary" onclick="odLogin()">Conectar</button><button class="green" onclick="odBackup()">Salvar no OneDrive</button></div><div class="row"><button onclick="odRestore()">Restaurar</button><button onclick="odLogout()">Sair</button></div></div>
+<div class="card"><h2>💾 Backup manual</h2><p class="small">Você também pode exportar e guardar o JSON no OneDrive/iCloud.</p><button class="primary" onclick="exportJson()">Exportar JSON</button><label style="display:block;margin-top:10px">Importar JSON<input id="importFile" type="file" accept=".json,application/json"></label></div>
+</div></section>
+
+<section id="config" class="pane"><div class="card"><h2>Metas</h2><label>Água (ml/dia)</label><input id="waterGoal" type="number"><label>Calorias (kcal/dia)</label><input id="calGoal" type="number"><label>Proteína (g/dia)</label><input id="proteinGoal" type="number"><button class="primary" onclick="saveSettings()">Salvar metas</button></div></section>
+</main>
+<script>
+const K="minhaRotinaGitHubV1",D={settings:{waterGoal:3000,calGoal:2200,proteinGoal:180,clientId:"",redirectUri:""},days:{},weights:[]};let db=load(),msalApp=null,account=null;
+const $=x=>document.getElementById(x),num=x=>Number(x||0),uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random();
+function load(){try{return JSON.parse(localStorage.getItem(K))||structuredClone(D)}catch{return structuredClone(D)}}function save(){localStorage.setItem(K,JSON.stringify(db))}
+function today(){const d=new Date();return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}function now(){return new Date().toTimeString().slice(0,5)}function day(d){return db.days[d]||(db.days[d]={water:[],foods:[]})}
+function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
+function totals(d){const x=day(d),fs=x.foods||[];return{w:(x.water||[]).reduce((s,a)=>s+num(a.ml),0),cal:fs.reduce((s,a)=>s+num(a.cal),0),p:fs.reduce((s,a)=>s+num(a.p),0),c:fs.reduce((s,a)=>s+num(a.c),0),f:fs.reduce((s,a)=>s+num(a.f),0)}}
+function render(){const d=$("date").value||today(),t=totals(d),s=db.settings;const wp=Math.min(100,Math.round(t.w/num(s.waterGoal)*100||0)),cp=Math.min(100,Math.round(t.cal/num(s.calGoal)*100||0));
+$("aguaTxt").textContent=Math.round(t.w)+" ml";$("aguaMetaTxt").textContent=s.waterGoal+" ml";$("aguaBar").style.width=wp+"%";$("calTxt").textContent=Math.round(t.cal)+" kcal";$("calMetaTxt").textContent=s.calGoal+" kcal";$("calBar").style.width=cp+"%";$("prot").textContent=t.p.toFixed(1)+"g";$("carb").textContent=t.c.toFixed(1)+"g";$("fat").textContent=t.f.toFixed(1)+"g";
+const fs=day(d).foods||[];$("foodList").innerHTML=fs.length?fs.map(x=>'<div class="item"><div><b>'+esc(x.meal)+' — '+esc(x.name)+'</b><div class="meta">'+esc(x.time)+' • '+esc(x.qty)+' • '+Math.round(num(x.cal))+' kcal</div></div><button class="red" onclick="delFood(\''+x.id+'\')">Excluir</button></div>').join(""):'<div class="small">Nenhum alimento.</div>';
+const all=[];(day(d).water||[]).forEach(x=>all.push({t:x.time,txt:"Água — "+x.ml+" ml"}));fs.forEach(x=>all.push({t:x.time,txt:x.meal+" — "+x.name}));all.sort((a,b)=>(b.t||"").localeCompare(a.t||""));$("todayList").innerHTML=all.length?all.map(x=>'<div class="item"><div><b>'+esc(x.txt)+'</b><div class="meta">'+esc(x.t)+'</div></div></div>').join(""):'<div class="small">Nenhum registro.</div>';
+$("weightList").innerHTML=db.weights.length?[...db.weights].sort((a,b)=>b.date.localeCompare(a.date)).map(x=>'<div class="item"><div><b>'+x.date+' — '+num(x.value).toFixed(1)+' kg</b><div class="meta">'+esc(x.note||"")+'</div></div></div>').join(""):'<div class="small">Nenhum peso.</div>';
+$("waterGoal").value=s.waterGoal;$("calGoal").value=s.calGoal;$("proteinGoal").value=s.proteinGoal;$("clientId").value=s.clientId||"";$("redirectUri").value=s.redirectUri||location.href.split("#")[0];save()}
+function addWater(v){day($("date").value).water.push({id:uid(),ml:num(v),time:now()});render()}function customWater(){const v=prompt("Quantidade em ml:");if(num(v)>0)addWater(v)}
+$("foodForm").onsubmit=e=>{e.preventDefault();day($("date").value).foods.push({id:uid(),meal:$("meal").value,name:$("foodName").value,qty:$("qty").value,time:$("time").value||now(),cal:num($("cal").value),p:num($("p").value),c:num($("c").value),f:num($("f").value),note:$("note").value});e.target.reset();$("time").value=now();render()}
+window.delFood=id=>{day($("date").value).foods=day($("date").value).foods.filter(x=>x.id!==id);render()}
+function saveWeight(){const v=$("quickWeight").value;if(!num(v))return;db.weights=db.weights.filter(x=>x.date!==$("date").value);db.weights.push({date:$("date").value,value:num(v),note:""});render()}
+function saveWeight2(){const d=$("weightDate").value,v=$("weightValue").value;if(!d||!num(v))return;db.weights=db.weights.filter(x=>x.date!==d);db.weights.push({date:d,value:num(v),note:$("weightNote").value});render()}
+function saveSettings(){db.settings.waterGoal=num($("waterGoal").value)||3000;db.settings.calGoal=num($("calGoal").value)||2200;db.settings.proteinGoal=num($("proteinGoal").value)||180;render()}
+function exportJson(){const b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="minha-rotina-backup.json";a.click();URL.revokeObjectURL(u)}
+$("importFile").onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());db=j;render();alert("Backup importado.")}catch{alert("Arquivo inválido.")}}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));document.querySelectorAll(".pane").forEach(x=>x.classList.remove("on"));b.classList.add("on");$(b.dataset.p).classList.add("on")});
+async function initMsal(){db.settings.clientId=$("clientId").value.trim();db.settings.redirectUri=$("redirectUri").value.trim()||location.href.split("#")[0];save();if(!db.settings.clientId)throw Error("Informe o Client ID.");msalApp=new msal.PublicClientApplication({auth:{clientId:db.settings.clientId,authority:"https://login.microsoftonline.com/consumers",redirectUri:db.settings.redirectUri},cache:{cacheLocation:"localStorage"}});account=msalApp.getAllAccounts()[0]||null}
+async function token(){if(!msalApp)await initMsal();if(!account){const r=await msalApp.loginPopup({scopes:["Files.ReadWrite.AppFolder","User.Read"]});account=r.account}try{return(await msalApp.acquireTokenSilent({account,scopes:["Files.ReadWrite.AppFolder","User.Read"]})).accessToken}catch{return(await msalApp.acquireTokenPopup({scopes:["Files.ReadWrite.AppFolder","User.Read"]})).accessToken}}
+async function odLogin(){try{await token();$("odStatus").textContent="OneDrive conectado."}catch(e){alert(e.message)}}async function odBackup(){try{const t=await token(),r=await fetch("https://graph.microsoft.com/v1.0/me/drive/special/approot:/minha-rotina-backup.json:/content",{method:"PUT",headers:{Authorization:"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify(db)});if(!r.ok)throw Error(await r.text());$("odStatus").textContent="Backup salvo: "+new Date().toLocaleString("pt-BR")}catch(e){alert("Erro no backup: "+e.message)}}async function odRestore(){try{const t=await token(),r=await fetch("https://graph.microsoft.com/v1.0/me/drive/special/approot:/minha-rotina-backup.json:/content",{headers:{Authorization:"Bearer "+t}});if(!r.ok)throw Error("Backup não encontrado.");db=await r.json();render();alert("Restaurado do OneDrive.")}catch(e){alert(e.message)}}async function odLogout(){if(msalApp&&account)await msalApp.logoutPopup({account});account=null;$("odStatus").textContent="Não conectado."}
+$("date").value=today();$("weightDate").value=today();$("time").value=now();$("date").onchange=render;render();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
